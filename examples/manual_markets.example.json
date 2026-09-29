@@ -1,0 +1,4 @@
+{
+  "fed-decision-in-october": { "underlying": "BTCUSDT", "beta_pp_per_pct": 0.8 },
+  "ethereum-etf-staking-approved-by-december-31": { "underlying": "ETHUSDT", "beta_pp_per_pct": 0.5 }
+}
