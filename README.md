@@ -16,6 +16,8 @@ A Polymarket "Bitcoin above $84,000 on Friday" position is really a digital opti
 
 It runs in **paper mode** by default.
 
+> **Read the [backtest](#honest-backtest--methodology) before relying on toxicity gating.** On 256 daily BTC markets (Jan–Sep 2026), gating on VPIN rebuilt from public 1-minute data did no better than the same hedges at random times. What did cut the tail was staying delta-neutral all the time and exiting an hour before resolution.
+
 ---
 
 ## How it works
@@ -145,6 +147,69 @@ pytest -q && ruff check src tests && mypy src
 | `LIVE_TRADING` / `BINANCE_DEMO` | `false` / `true` | Paper → Binance demo → real |
 | `BINANCE_API_KEY` / `BINANCE_API_SECRET` | | Required when `LIVE_TRADING=true` |
 | `JOURNAL_PATH` | `hedger_journal.jsonl` | Decision and order log |
+
+---
+
+## Honest Backtest & Methodology
+
+We backtested the hedger's own code paths (`ToxicityEvaluator` → `position_delta_usd` → `decide()`) on every daily Polymarket *"Will the price of Bitcoin be above $K on <date>?"* market from **2 January to 28 September 2026**. The goal was to find out whether toxicity gating actually cuts tail risk. **Mostly, it didn't.**
+
+### Setup
+
+- **Book.** At 24 hours before resolution, hold 1,000 shares of the strike nearest spot, once long YES and once long NO (mirrored books, so directional drift cancels). Hold to the official resolution. There are 256 markets (512 books); 8 were skipped because no strike was priced between 0.10 and 0.90 at entry.
+- **Replay.** Minute by minute on real data:
+  - Polymarket CLOB minute history for the marks;
+  - Binance USDⓈ-M BTCUSDT perp minute closes for the hedge;
+  - maker 2 bps (post-only, assumed filled within the minute) and taker 5 bps + 1 bp slippage (IOC);
+  - real funding payments.
+- **Signals.** This is our own open reimplementation from Binance public 1-minute spot klines, which carry the exact taker-buy notional per bar. It is **not** FollowSM's production calibration.
+  - VPIN uses $1M notional buckets over a 50-bucket window. `vpin_percentile` is its rank within the previous 7 days.
+  - A robustness run uses activity-scaled buckets (trailing 7-day average daily volume / 50).
+  - Three inputs have no public history and were **not tested**: 1% book toxicity, smart-money sweeps, and Polymarket book flow. Only the VPIN-percentile and liquidity-sweep triggers are exercised.
+- **Placebo.** This is the `gated` strategy with its level path shifted by a random offset (20 seeds). It hedges exactly as often, in regimes of the same length, at the wrong times. If the toxicity timing carries information, `gated` should beat it.
+
+### Results (USD per 1,000-share position, $1M buckets)
+
+| Strategy | Mean P&L | Std dev | Expected shortfall 5% | Worst | p95 drawdown | Hedge cost | Perp traded |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Unhedged, to expiry | 0 | 473 | −742 | −885 | 895 | 0 | 0 |
+| Inventory limit only | −115 | 394 | −829 | −1,177 | 858 | 101 | $288k |
+| **Toxicity-gated** (repo defaults) | −152 | 383 | −887 | −1,177 | 890 | 134 | $408k |
+| **Placebo** (mean of 20 seeds) | −159 | 375 | −887 | −1,211 | 880 | 141 | $429k |
+| Always 100% hedged | −130 | 242 | −719 | −1,020 | 723 | 130 | $649k |
+| Unhedged, exit 1h early | 0 | 402 | −682 | −839 | 770 | 0 | 0 |
+| Always hedged, exit 1h early | −127 | 171 | −509 | −776 | 594 | 126 | $610k |
+| … with a $5,000 rebalance deadband | −38 | 164 | **−385** | −535 | 490 | 36 | $158k |
+
+Mean P&L is 0 when unhedged because the YES and NO books mirror each other. Every hedged strategy's mean is simply minus its hedging cost.
+
+**Findings:**
+
+1. **The toxicity timing adds nothing measurable.** The placebo matched or beat `gated` on expected shortfall in 50% of seeds and on standard deviation in 95%. With activity-scaled buckets the figures were 55% and 95%. `gated` is roughly unhedged minus its costs.
+2. **VPIN rebuilt from 1-minute klines did not flag tail moves.** With $1M buckets, a top-5% VPIN percentile was followed by a top-1% 15-minute BTC move **0.61×** as often as the base rate. With activity-scaled buckets it was **0.54×**. On the worst day in the sample, no alert fired at all with $1M buckets.
+3. **The tail is mostly the jump at expiry.** Digital-option gamma explodes near resolution, and a perp hedge can't follow it. Staying fully delta-neutral and exiting an hour early roughly halved the 5% expected shortfall: −385 against −742 with the wider deadband. The cost fell from $126 to $36 per position once small rebalances were skipped.
+
+![Tail risk vs cost](research/assets/early_exit_fixed.png)
+
+### Caveats
+
+- **Rebuilt signals only.** These are our reconstruction from public 1-minute bars, not FollowSM's tick-level production feed, and the order-book, smart-money and Polymarket-flow triggers are untested. This result says *"1-minute VPIN gating doesn't help"*, not *"microstructure gating can't help"*.
+- **Narrow scope.** Only BTC at-the-money daily markets were tested, over nine months. The expected shortfall rests on the worst 25 of 512 books, so it is noisy.
+- **In-sample deadband.** The grid was chosen in-sample, and the best value ($5,000) sits at its edge.
+- **Optimistic fills and missing exit cost.** Post-only fills are assumed to be immediate. Leaving Polymarket an hour early is marked at the minute price, with no spread or slippage modelled for the exit.
+- **Manual exit.** The hedger does not trade Polymarket, so the early exit is up to you.
+
+### Reproduce
+
+```bash
+pip install -e ".[research]"
+python research/backtest.py                    # $1M buckets -> research/results_fixed.json
+VPIN_BUCKET=adv python research/backtest.py    # activity-scaled buckets -> research/results_adv.json
+```
+
+The first run downloads and caches about nine months of public Binance and Polymarket data under `research/data/`. No API keys are needed. Charts are written to [research/assets/](research/assets/).
+
+To run the hedger the way the backtest favours, set `BASELINE_HEDGE_RATIO=1.0` (plus `PRE_HEDGE_RATIO=1.0` and `EMERGENCY_HEDGE_RATIO=1.0`) and a wider `MIN_REBALANCE_USD`, and close Polymarket positions yourself about an hour before resolution.
 
 ---
 

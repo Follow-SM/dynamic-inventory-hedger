@@ -19,6 +19,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0", "ruff>=0.6", "mypy>=1.10"]
+research = ["matplotlib>=3.9"]
 
 [project.scripts]
 dynamic-inventory-hedger = "dynamic_inventory_hedger.__main__:main"

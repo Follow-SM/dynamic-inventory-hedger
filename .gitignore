@@ -8,4 +8,5 @@ __pycache__/
 *.egg-info/
 dist/
 hedger_journal.jsonl
+research/data/
 .ipynb_checkpoints/
