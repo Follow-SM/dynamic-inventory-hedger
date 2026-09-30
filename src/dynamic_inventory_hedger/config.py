@@ -38,7 +38,9 @@ class HedgerConfig(BaseModel):
     pre_hedge_raw_vpin: float = 0.80
     emergency_raw_vpin: float = 0.90
     rebalance_raw_vpin: float = 0.60
-    ob_toxicity_threshold: float = 2.0  # 1% book ask/bid notional ratio treated as toxic
+    ob_imbalance_percentile_high: float = 0.99  # toxic 1% book = either tail of the symbol's own history
+    ob_imbalance_percentile_low: float = 0.01
+    ob_toxicity_threshold: float = 2.0  # ask/bid notional ratio, only while the percentile is warming up
     sweep_volume_z: float = 6.0  # liquidity sweep = volume burst ...
     sweep_move_natr: float = 2.0  # ... AND a 15m move of this many 15m-NATRs
     whale_sweeps_escalate_usd: float = 250_000.0  # smart-money notional that escalates PRE -> EMERGENCY ...
@@ -74,6 +76,8 @@ class HedgerConfig(BaseModel):
             raise ValueError("need rebalance_percentile < pre_hedge_percentile < emergency_percentile")
         if not self.rebalance_raw_vpin <= self.pre_hedge_raw_vpin < self.emergency_raw_vpin:
             raise ValueError("need rebalance_raw_vpin <= pre_hedge_raw_vpin < emergency_raw_vpin")
+        if not 0 <= self.ob_imbalance_percentile_low < self.ob_imbalance_percentile_high <= 1:
+            raise ValueError("need 0 <= ob_imbalance_percentile_low < ob_imbalance_percentile_high <= 1")
         if not self.baseline_hedge_ratio <= self.pre_hedge_ratio <= self.emergency_hedge_ratio:
             raise ValueError("need baseline <= pre <= emergency hedge ratio")
         if self.live_trading and not (self.binance_api_key and self.binance_api_secret):

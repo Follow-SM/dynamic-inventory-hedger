@@ -33,6 +33,7 @@ def to_metric(s: ConfluenceSnapshot) -> ToxicityMetric:
         ob_imbalance_l1=m.ob_imbalance_l1,
         depth_imbalance={band: d.imbalance_ratio for band, d in m.depth_bands.items()},
         ob_toxicity_1pct=m.ob_toxicity_1pct,
+        ob_imbalance_percentile=m.ob_imbalance_percentile,
         volume_z_score=m.volume_z_score,
         natr_15m=m.natr_15m,
         price_delta_15m_pct=m.price_delta_15m_pct,

@@ -36,6 +36,7 @@ class ToxicityMetric(BaseModel):
     ob_imbalance_l1: float
     depth_imbalance: dict[str, float] = Field(default_factory=dict)  # "0.5%" / "1.0%" / "2.0%" bid share
     ob_toxicity_1pct: float
+    ob_imbalance_percentile: float | None = None  # 1% book imbalance ranked against the symbol's own history
     volume_z_score: float
     natr_15m: float
     price_delta_15m_pct: float

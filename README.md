@@ -49,8 +49,10 @@ The bands use `vpin_percentile`, which ranks VPIN against the symbol's own recen
 | Level | Trigger (defaults) | Hedge ratio | Order style |
 |---|---|---|---|
 | `EMERGENCY_HEDGE_EXECUTION` | `vpin_percentile ≥ 0.95`, **or** a liquidity sweep (volume Z ≥ 6 and a 15-minute move ≥ 2 × NATR), **or** a PRE condition confirmed by ≥ $250k smart-money sweeps with ≥ 65% of Polymarket book flow against you | 100% | IOC limit at mid ± 15 bps |
-| `PRE_HEDGING_ALERT` | `vpin_percentile ≥ 0.85`, **or** `ob_toxicity_1pct > 2` (lopsided 1% book) | 50% | Post-only limit at the touch, in $2k slices |
+| `PRE_HEDGING_ALERT` | `vpin_percentile ≥ 0.85`, **or** a toxic 1% book: `ob_imbalance_percentile ≥ 0.99` or `≤ 0.01`* | 50% | Post-only limit at the touch, in $2k slices |
 | `NORMAL` | everything below `vpin_percentile 0.60` (hysteresis) | 0% | Post-only, reduce-only unwind |
+
+\* `ob_imbalance_percentile` ranks the ±1% book imbalance against the symbol's own history, so a pair whose book is always bid-heavy doesn't read as permanently toxic. While it is still warming up (`None`), the evaluator falls back to `ob_toxicity_1pct > 2` (asks outweigh bids 2:1 within 1% of mid). Requires `followsm-sdk` ≥ 1.6.0.
 
 The evaluator escalates immediately, steps down from EMERGENCY to PRE once the emergency trigger clears, and returns to NORMAL only when every signal is back under the rebalance band. This stops it flip-flopping around a threshold.
 
@@ -136,7 +138,8 @@ pytest -q && ruff check src tests && mypy src
 | `MANUAL_MARKETS_FILE` | | JSON with per-market `underlying` + `beta_pp_per_pct` |
 | `PRE_HEDGE_PERCENTILE` / `EMERGENCY_PERCENTILE` / `REBALANCE_PERCENTILE` | `0.85` / `0.95` / `0.60` | Toxicity bands on `vpin_percentile` |
 | `PRE_HEDGE_RAW_VPIN` / `EMERGENCY_RAW_VPIN` / `REBALANCE_RAW_VPIN` | `0.80` / `0.90` / `0.60` | Fallback while `vpin_percentile` is warming up |
-| `OB_TOXICITY_THRESHOLD` | `2.0` | 1% book ask/bid notional ratio treated as toxic |
+| `OB_IMBALANCE_PERCENTILE_HIGH` / `OB_IMBALANCE_PERCENTILE_LOW` | `0.99` / `0.01` | Toxic 1% book: either tail of `ob_imbalance_percentile` |
+| `OB_TOXICITY_THRESHOLD` | `2.0` | 1% book ask/bid notional ratio treated as toxic while `ob_imbalance_percentile` is warming up |
 | `SWEEP_VOLUME_Z` / `SWEEP_MOVE_NATR` | `6.0` / `2.0` | Liquidity-sweep definition |
 | `WHALE_SWEEPS_ESCALATE_USD` / `ADVERSE_FLOW_ESCALATE` | `250000` / `0.65` | Smart-money escalation from PRE to EMERGENCY |
 | `BASELINE_HEDGE_RATIO` / `PRE_HEDGE_RATIO` / `EMERGENCY_HEDGE_RATIO` | `0` / `0.5` / `1.0` | Share of delta hedged per level |

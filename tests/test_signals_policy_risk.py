@@ -15,7 +15,17 @@ from dynamic_inventory_hedger.signals.evaluator import ToxicityEvaluator
 L = ToxicityLevel
 
 
-def metric(pctl=0.5, vpin=0.4, ob_tox=1.0, vol_z=0.0, move=0.0, natr=0.002, whales=0.0, symbol="BTCUSDT"):
+def metric(
+    pctl=0.5,
+    vpin=0.4,
+    ob_tox=1.0,
+    ob_pctl=None,
+    vol_z=0.0,
+    move=0.0,
+    natr=0.002,
+    whales=0.0,
+    symbol="BTCUSDT",
+):
     return ToxicityMetric(
         symbol=symbol,
         timestamp_ms=1,
@@ -24,6 +34,7 @@ def metric(pctl=0.5, vpin=0.4, ob_tox=1.0, vol_z=0.0, move=0.0, natr=0.002, whal
         vpin_percentile=pctl,
         ob_imbalance_l1=0.5,
         ob_toxicity_1pct=ob_tox,
+        ob_imbalance_percentile=ob_pctl,
         volume_z_score=vol_z,
         natr_15m=natr,
         price_delta_15m_pct=move,
@@ -55,6 +66,18 @@ def test_toxic_book_sweep_and_smart_money_escalation():
     pre = metric(pctl=0.88, whales=400_000)
     assert ToxicityEvaluator(cfg).evaluate(pre, adverse_flow=0.4).level is L.PRE_HEDGING_ALERT
     assert ToxicityEvaluator(cfg).evaluate(pre, adverse_flow=0.8).level is L.EMERGENCY_HEDGE_EXECUTION
+
+
+def test_toxic_book_uses_the_symbols_own_tails_once_warm():
+    cfg = HedgerConfig()
+    # structurally lopsided book that is normal for this symbol: no alert once the percentile is warm
+    assert ToxicityEvaluator(cfg).evaluate(metric(ob_tox=3.0, ob_pctl=0.6)).level is L.NORMAL
+    assert ToxicityEvaluator(cfg).evaluate(metric(ob_tox=1.0, ob_pctl=0.995)).level is L.PRE_HEDGING_ALERT
+    assert ToxicityEvaluator(cfg).evaluate(metric(ob_tox=0.3, ob_pctl=0.005)).level is L.PRE_HEDGING_ALERT
+    # warming up: fixed ratio fallback
+    assert ToxicityEvaluator(cfg).evaluate(metric(ob_tox=3.0, ob_pctl=None)).level is L.PRE_HEDGING_ALERT
+    with pytest.raises(ValueError):
+        HedgerConfig(ob_imbalance_percentile_low=0.5, ob_imbalance_percentile_high=0.4)
 
 
 def test_policy_ratios_slicing_and_order_styles():

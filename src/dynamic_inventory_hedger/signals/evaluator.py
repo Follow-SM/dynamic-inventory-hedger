@@ -6,7 +6,8 @@ thresholds apply only while the percentile is still warming up (None).
     EMERGENCY  vpin rank >= emergency band, OR a liquidity sweep (volume burst + a 15m move
                of several NATRs), OR a PRE condition confirmed by heavy smart-money sweeps
                with Polymarket book flow running against our position
-    PRE        vpin rank >= pre-hedge band, OR a toxic 1% book (ask/bid notional ratio)
+    PRE        vpin rank >= pre-hedge band, OR a toxic 1% book: its imbalance in either tail of
+               the symbol's own history (ask/bid notional ratio while that is warming up)
     NORMAL     otherwise
 
 Hysteresis: escalate immediately; step EMERGENCY -> PRE as soon as the emergency trigger
@@ -47,6 +48,21 @@ class ToxicityEvaluator:
             )
         return "vpin(raw)", m.vpin, c.pre_hedge_raw_vpin, c.emergency_raw_vpin, c.rebalance_raw_vpin
 
+    def toxic_book(self, m: ToxicityMetric) -> str | None:
+        """Reason the 1% book is toxic, or None."""
+        c = self.config
+        p = m.ob_imbalance_percentile
+        if p is not None:
+            if p >= c.ob_imbalance_percentile_high or p <= c.ob_imbalance_percentile_low:
+                return (
+                    f"ob_imbalance_percentile {p:.3f} outside "
+                    f"[{c.ob_imbalance_percentile_low:.2f}, {c.ob_imbalance_percentile_high:.2f}]"
+                )
+            return None
+        if m.ob_toxicity_1pct > c.ob_toxicity_threshold:
+            return f"ob_toxicity_1pct {m.ob_toxicity_1pct:.2f} > {c.ob_toxicity_threshold:.2f}"
+        return None
+
     def is_sweep(self, m: ToxicityMetric) -> bool:
         c = self.config
         return (
@@ -69,10 +85,11 @@ class ToxicityEvaluator:
             raw = ToxicityLevel.PRE_HEDGING_ALERT
             reasons.append(f"{label} {value:.3f} >= {pre:.2f}")
 
-        toxic_book = m.ob_toxicity_1pct > c.ob_toxicity_threshold
-        if toxic_book and raw is ToxicityLevel.NORMAL:
+        book_reason = self.toxic_book(m)
+        toxic_book = book_reason is not None
+        if book_reason is not None and raw is ToxicityLevel.NORMAL:
             raw = ToxicityLevel.PRE_HEDGING_ALERT
-            reasons.append(f"ob_toxicity_1pct {m.ob_toxicity_1pct:.2f} > {c.ob_toxicity_threshold:.2f}")
+            reasons.append(book_reason)
 
         sweep = self.is_sweep(m)
         if sweep:
