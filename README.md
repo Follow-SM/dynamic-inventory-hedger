@@ -234,6 +234,24 @@ TMR_TRADFI_ROOT=/path/to/tick-microstructure-research/data/tradfi python researc
 
 Results go to `research/results_tradfi.json` and `research/assets/tradfi_*.png`.
 
+### Cross-venue market making: Polymarket quoted off the perp
+
+[`research/backtest_confluence.py`](research/backtest_confluence.py) replays every historical taker order on Polymarket's equity Up/Down books against a paper market maker. Its fair value comes from the Binance perp, using this repo's own digital model (`inventory/delta.py`). It compares:
+- quoting around Polymarket's own mid (the naive control) against quoting around the perp's fair value;
+- three volatility inputs: wall-clock, session-aware, and measured by minutes to the close;
+- the risk tools from the hedging backtests: a perp delta hedge, an exit one hour before resolution, and an `ob_toxicity_1pct` breaker;
+- 250 ms to 60 s of quote latency, half-spreads and hedge deadbands;
+- 20 placebo seeds that quote off another night's perp path.
+
+It needs both data sets from [tick-microstructure-research](https://github.com/Follow-SM/tick-microstructure-research):
+
+```bash
+tmr tradfi fetch && tmr tradfi pm-fetch            # run from a tick-microstructure-research checkout
+TMR_TRADFI_ROOT=/path/to/tick-microstructure-research/data/tradfi python research/backtest_confluence.py
+```
+
+Results go to `research/results_confluence.json` and `research/assets/confluence_*.png`.
+
 ---
 
 ## Plans
