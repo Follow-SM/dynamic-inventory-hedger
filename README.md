@@ -214,6 +214,26 @@ The first run downloads and caches about nine months of public Binance and Polym
 
 To run the hedger the way the backtest favours, set `BASELINE_HEDGE_RATIO=1.0` (plus `PRE_HEDGE_RATIO=1.0` and `EMERGENCY_HEDGE_RATIO=1.0`) and a wider `MIN_REBALANCE_USD`, and close Polymarket positions yourself about an hour before resolution.
 
+### Tokenized equities: gap risk at the US open
+
+[`research/backtest_tradfi.py`](research/backtest_tradfi.py) runs the same code paths on Polymarket's daily *"TSLA / NVDA / AAPL / SPY … Up or Down"* markets. Each one is hedged with the matching Binance `TRADIFI_PERPETUAL` perp and held from the previous official close through the US open to resolution. It compares:
+- continuous hedging;
+- an **open-window freeze**, with no orders from 09:25 to 09:35 ET;
+- deadbands from $150 to $5,000;
+- 0 to 1,000 ms of order latency;
+- a session-aware volatility input;
+- toxicity gating against a placebo.
+
+Fills are priced on the tick tape. The data pipeline comes from [tick-microstructure-research](https://github.com/Follow-SM/tick-microstructure-research):
+
+```bash
+pip install -e ".[tradfi]"
+tmr tradfi fetch                                   # run from a tick-microstructure-research checkout
+TMR_TRADFI_ROOT=/path/to/tick-microstructure-research/data/tradfi python research/backtest_tradfi.py
+```
+
+Results go to `research/results_tradfi.json` and `research/assets/tradfi_*.png`.
+
 ---
 
 ## Plans

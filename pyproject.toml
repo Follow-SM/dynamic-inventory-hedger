@@ -20,9 +20,16 @@ dependencies = [
 [project.optional-dependencies]
 dev = ["pytest>=8.0", "ruff>=0.6", "mypy>=1.10"]
 research = ["matplotlib>=3.9"]
+tradfi = [
+    "matplotlib>=3.9",
+    "tick-microstructure-research[parquet] @ git+https://github.com/Follow-SM/tick-microstructure-research.git",
+]
 
 [project.scripts]
 dynamic-inventory-hedger = "dynamic_inventory_hedger.__main__:main"
+
+[tool.hatch.metadata]
+allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/dynamic_inventory_hedger"]

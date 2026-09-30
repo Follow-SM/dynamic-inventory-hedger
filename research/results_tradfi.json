@@ -1,0 +1,576 @@
+{
+  "period": "2026-01-28 -> 2026-09-28",
+  "markets": 1276,
+  "books": 2552,
+  "shares": 1000.0,
+  "skipped": {
+    "variance warm-up": 481,
+    "listed after the previous close": 55,
+    "resolution disagrees with Yahoo closes": 7
+  },
+  "assumptions": {
+    "entry": "previous official close (16:00 ET), strike = that close; held to the official close",
+    "fills": "IOC walks same-side aggTrades prints from decision + latency (60 s window, then +5 bps); post-only fills at the last opposite-side print within the minute (queue ignored: upper bound)",
+    "fees": {
+      "maker": 0.0002,
+      "taker": 0.0005
+    },
+    "fail_closed": "no perp bar or no tape -> no new orders that minute; existing hedge kept",
+    "hysteresis": "evaluator: immediate escalation, NORMAL again only below vpin_percentile 0.60; freeze: no orders 5 min either side of 09:30 ET, re-arms at 09:35 and catches up",
+    "latency": "applied to every fill (equivalent to Intervals.delayed on the protection windows)",
+    "delta": "repo model (wall-clock sigma from natr_15m); *_session_sigma rescales sigma so the remaining variance matches a 20-day session forecast incl. the open jump",
+    "spot": "perp price divided by (1 + perp/official-close basis at entry)"
+  },
+  "strategies": {
+    "unhedged": {
+      "n": 2552,
+      "mean_pnl": 6.682220085518184e-17,
+      "std_pnl": 503.58977807020915,
+      "cvar5": -596.1417322834645,
+      "worst": -850.0,
+      "mean_max_dd": 546.9237852664577,
+      "p95_max_dd": 875.0,
+      "mean_costs": 0.0,
+      "mean_fees": 0.0,
+      "mean_slippage": 0.0,
+      "mean_open_window_cost": 0.0,
+      "mean_traded_usd": 0.0,
+      "thin_fills_per_book": 0.0
+    },
+    "continuous": {
+      "n": 2552,
+      "mean_pnl": -83.17661695875974,
+      "std_pnl": 331.39322069862243,
+      "cvar5": -792.2068217035483,
+      "worst": -1388.2553472319564,
+      "mean_max_dd": 573.0015151475943,
+      "p95_max_dd": 997.192284795344,
+      "mean_costs": 83.49719043057189,
+      "mean_fees": 156.36675931946272,
+      "mean_slippage": -72.86839084379895,
+      "mean_open_window_cost": 3.0061807037675794,
+      "mean_traded_usd": 781749.901945251,
+      "thin_fills_per_book": 0.0109717868338558
+    },
+    "continuous_session_sigma": {
+      "n": 2552,
+      "mean_pnl": -26.55557337813688,
+      "std_pnl": 217.1909596264847,
+      "cvar5": -526.438994018247,
+      "worst": -910.8445906711263,
+      "mean_max_dd": 401.6900326820531,
+      "p95_max_dd": 685.1817452958769,
+      "mean_costs": 26.60523791275342,
+      "mean_fees": 54.5700956625108,
+      "mean_slippage": -27.964400201926285,
+      "mean_open_window_cost": 0.7554212175266414,
+      "mean_traded_usd": 272774.1047632705,
+      "thin_fills_per_book": 0.010579937304075235
+    },
+    "freeze": {
+      "n": 2552,
+      "mean_pnl": -82.34229295469072,
+      "std_pnl": 338.1285198656016,
+      "cvar5": -807.8234865111195,
+      "worst": -1393.554805865653,
+      "mean_max_dd": 576.4546287711826,
+      "p95_max_dd": 1026.3290972297368,
+      "mean_costs": 82.68495948105594,
+      "mean_fees": 151.90376811599953,
+      "mean_slippage": -69.21763059137335,
+      "mean_open_window_cost": 2.19400007691524,
+      "mean_traded_usd": 759435.0736276493,
+      "thin_fills_per_book": 0.0109717868338558
+    },
+    "freeze_session_sigma": {
+      "n": 2552,
+      "mean_pnl": -26.361791459034677,
+      "std_pnl": 219.3222844595243,
+      "cvar5": -525.2851094216841,
+      "worst": -919.1359206293105,
+      "mean_max_dd": 402.0725366001962,
+      "p95_max_dd": 689.0847531715737,
+      "mean_costs": 26.40936773296387,
+      "mean_fees": 53.57431558961552,
+      "mean_slippage": -27.16449034353445,
+      "mean_open_window_cost": 0.559559284938514,
+      "mean_traded_usd": 267795.17054753605,
+      "thin_fills_per_book": 0.010579937304075235
+    },
+    "gated": {
+      "n": 2552,
+      "mean_pnl": -196.32871472622324,
+      "std_pnl": 420.5058247049559,
+      "cvar5": -1039.2826609283607,
+      "worst": -1663.5892500272387,
+      "mean_max_dd": 581.4711982062719,
+      "p95_max_dd": 990.6477694996195,
+      "mean_costs": 198.9204585618668,
+      "mean_fees": 203.15320653161294,
+      "mean_slippage": -4.232066283998385,
+      "mean_open_window_cost": 6.6673937673556285,
+      "mean_traded_usd": 693291.5335180111,
+      "thin_fills_per_book": 104.96081504702194
+    },
+    "gated_naive": {
+      "n": 2552,
+      "mean_pnl": -210.0391088316468,
+      "std_pnl": 425.1565292288922,
+      "cvar5": -1110.618164169527,
+      "worst": -2079.9764481411075,
+      "mean_max_dd": 597.4048867186727,
+      "p95_max_dd": 1076.306753217872,
+      "mean_costs": 213.21113094177255,
+      "mean_fees": 194.20317758096724,
+      "mean_slippage": 19.01238688867429,
+      "mean_open_window_cost": 16.31994072914374,
+      "mean_traded_usd": 550296.4418531049,
+      "thin_fills_per_book": 123.6391065830721
+    },
+    "continuous_latency_100": {
+      "n": 2552,
+      "mean_pnl": -83.05532416397264,
+      "std_pnl": 332.12019553387427,
+      "cvar5": -793.4486058539608,
+      "worst": -1390.783919348506,
+      "mean_max_dd": 573.1408079050218,
+      "p95_max_dd": 999.2469609655577,
+      "mean_costs": 83.34053176107261,
+      "mean_fees": 156.37646954806704,
+      "mean_slippage": -73.03476072911845,
+      "mean_open_window_cost": 2.70823606493882,
+      "mean_traded_usd": 781798.5455070484,
+      "thin_fills_per_book": 0.011363636363636364
+    },
+    "continuous_latency_250": {
+      "n": 2552,
+      "mean_pnl": -82.96322810197991,
+      "std_pnl": 333.60374479890316,
+      "cvar5": -797.1358439366928,
+      "worst": -1398.308953895546,
+      "mean_max_dd": 573.6425134469536,
+      "p95_max_dd": 1005.3464097135027,
+      "mean_costs": 83.15392300140357,
+      "mean_fees": 156.3816440403477,
+      "mean_slippage": -73.22653360532425,
+      "mean_open_window_cost": 2.4278931450544885,
+      "mean_traded_usd": 781824.4956413953,
+      "thin_fills_per_book": 0.011755485893416929
+    },
+    "continuous_latency_500": {
+      "n": 2552,
+      "mean_pnl": -85.52056985675843,
+      "std_pnl": 335.1610735677142,
+      "cvar5": -803.7837483789148,
+      "worst": -1408.4400647774794,
+      "mean_max_dd": 575.1919634475362,
+      "p95_max_dd": 1008.328834465691,
+      "mean_costs": 85.50332622101557,
+      "mean_fees": 156.37672380108515,
+      "mean_slippage": -70.87315563812267,
+      "mean_open_window_cost": 3.2583530314597144,
+      "mean_traded_usd": 781799.9155257379,
+      "thin_fills_per_book": 0.011363636363636364
+    },
+    "continuous_latency_1000": {
+      "n": 2552,
+      "mean_pnl": -92.26449783100904,
+      "std_pnl": 337.4612456186751,
+      "cvar5": -813.4753208555527,
+      "worst": -1417.236994236655,
+      "mean_max_dd": 578.7702260412564,
+      "p95_max_dd": 1015.5700206405811,
+      "mean_costs": 91.50822631944422,
+      "mean_fees": 156.36377206822107,
+      "mean_slippage": -64.85138447559433,
+      "mean_open_window_cost": 4.343392832628606,
+      "mean_traded_usd": 781734.8954232079,
+      "thin_fills_per_book": 0.010579937304075235
+    },
+    "freeze_latency_100": {
+      "n": 2552,
+      "mean_pnl": -82.50111046343963,
+      "std_pnl": 338.40908414064796,
+      "cvar5": -809.899849839235,
+      "worst": -1396.202729132469,
+      "mean_max_dd": 576.6141308396308,
+      "p95_max_dd": 1027.0492110509583,
+      "mean_costs": 82.80544227519829,
+      "mean_fees": 151.9120130565528,
+      "mean_slippage": -69.10539372500016,
+      "mean_open_window_cost": 2.1732759033930455,
+      "mean_traded_usd": 759476.3907132536,
+      "thin_fills_per_book": 0.011363636363636364
+    },
+    "freeze_latency_250": {
+      "n": 2552,
+      "mean_pnl": -82.76668464053056,
+      "std_pnl": 338.87513589875545,
+      "cvar5": -809.8025479821093,
+      "worst": -1403.269040152977,
+      "mean_max_dd": 576.7897111655267,
+      "p95_max_dd": 1031.0621635354155,
+      "mean_costs": 82.9831337093031,
+      "mean_fees": 151.91565292477355,
+      "mean_slippage": -68.93133178202032,
+      "mean_open_window_cost": 2.2572059942170997,
+      "mean_traded_usd": 759494.6678199045,
+      "thin_fills_per_book": 0.011755485893416929
+    },
+    "freeze_latency_500": {
+      "n": 2552,
+      "mean_pnl": -84.62052940975784,
+      "std_pnl": 340.05964630569497,
+      "cvar5": -814.2102827896757,
+      "worst": -1414.5643973326996,
+      "mean_max_dd": 577.8878243472323,
+      "p95_max_dd": 1031.4123775636158,
+      "mean_costs": 84.63158600315776,
+      "mean_fees": 151.91132880546866,
+      "mean_slippage": -67.27950086053376,
+      "mean_open_window_cost": 2.3867591069733054,
+      "mean_traded_usd": 759473.0682825799,
+      "thin_fills_per_book": 0.011363636363636364
+    },
+    "freeze_latency_1000": {
+      "n": 2552,
+      "mean_pnl": -90.7728487087411,
+      "std_pnl": 342.5744779392519,
+      "cvar5": -826.7184392555545,
+      "worst": -1422.202072073578,
+      "mean_max_dd": 580.91302450087,
+      "p95_max_dd": 1036.3385526946831,
+      "mean_costs": 90.0624011594585,
+      "mean_fees": 151.8984258733784,
+      "mean_slippage": -61.83186344090793,
+      "mean_open_window_cost": 2.8976128015326443,
+      "mean_traded_usd": 759408.2919833555,
+      "thin_fills_per_book": 0.010579937304075235
+    },
+    "continuous_deadband_500": {
+      "n": 2552,
+      "mean_pnl": -73.69110843726013,
+      "std_pnl": 331.0476690252122,
+      "cvar5": -779.4974950001854,
+      "worst": -1361.239425620893,
+      "mean_max_dd": 568.8015575660376,
+      "p95_max_dd": 985.7604344536377,
+      "mean_costs": 74.00577383589595,
+      "mean_fees": 140.163939792104,
+      "mean_slippage": -66.15781395470965,
+      "mean_open_window_cost": 2.8879286398758346,
+      "mean_traded_usd": 700533.8212814049,
+      "thin_fills_per_book": 0.020768025078369907
+    },
+    "continuous_deadband_1000": {
+      "n": 2552,
+      "mean_pnl": -61.90064989378843,
+      "std_pnl": 330.63901660979644,
+      "cvar5": -765.1543304780773,
+      "worst": -1345.6108485138411,
+      "mean_max_dd": 563.5399218769052,
+      "p95_max_dd": 978.1457760432215,
+      "mean_costs": 62.23094955974385,
+      "mean_fees": 118.99204918274192,
+      "mean_slippage": -56.75861221417663,
+      "mean_open_window_cost": 2.6818514645294815,
+      "mean_traded_usd": 594351.0279169474,
+      "thin_fills_per_book": 0.03213166144200627
+    },
+    "continuous_deadband_2500": {
+      "n": 2552,
+      "mean_pnl": -36.728131713681165,
+      "std_pnl": 328.220740982941,
+      "cvar5": -732.9485157279036,
+      "worst": -1306.270069655176,
+      "mean_max_dd": 549.3090397468005,
+      "p95_max_dd": 964.7957759464921,
+      "mean_costs": 36.8792633781085,
+      "mean_fees": 71.12401097605542,
+      "mean_slippage": -34.24201838028249,
+      "mean_open_window_cost": 1.8880712362451713,
+      "mean_traded_usd": 353487.05016527674,
+      "thin_fills_per_book": 0.07954545454545454
+    },
+    "continuous_deadband_5000": {
+      "n": 2552,
+      "mean_pnl": -23.97491728797201,
+      "std_pnl": 329.4497310186228,
+      "cvar5": -716.2558784452116,
+      "worst": -1241.659972904376,
+      "mean_max_dd": 543.3820640503168,
+      "p95_max_dd": 954.1400719578828,
+      "mean_costs": 23.99134010938427,
+      "mean_fees": 43.98464062140722,
+      "mean_slippage": -19.994758067967673,
+      "mean_open_window_cost": 1.1895961744671677,
+      "mean_traded_usd": 213957.99597635688,
+      "thin_fills_per_book": 0.15869905956112854
+    },
+    "freeze_deadband_500": {
+      "n": 2552,
+      "mean_pnl": -72.88344125494204,
+      "std_pnl": 337.8937253353337,
+      "cvar5": -795.0716218874435,
+      "worst": -1365.3605370739253,
+      "mean_max_dd": 572.3437841369547,
+      "p95_max_dd": 1018.195170204925,
+      "mean_costs": 73.22167049935244,
+      "mean_fees": 135.8119908548873,
+      "mean_slippage": -62.58996834387661,
+      "mean_open_window_cost": 2.10484073936443,
+      "mean_traded_usd": 678774.8466958005,
+      "thin_fills_per_book": 0.02037617554858934
+    },
+    "freeze_deadband_1000": {
+      "n": 2552,
+      "mean_pnl": -61.18700236887383,
+      "std_pnl": 337.6516541176276,
+      "cvar5": -780.1474624103355,
+      "worst": -1349.8733289479442,
+      "mean_max_dd": 567.1778182550084,
+      "p95_max_dd": 1010.5336279582752,
+      "mean_costs": 61.50100888183816,
+      "mean_fees": 114.89286891062213,
+      "mean_slippage": -53.38932480711672,
+      "mean_open_window_cost": 1.9555847036042893,
+      "mean_traded_usd": 573858.6927736634,
+      "thin_fills_per_book": 0.031739811912225704
+    },
+    "freeze_deadband_2500": {
+      "n": 2552,
+      "mean_pnl": -36.1677904302012,
+      "std_pnl": 334.75034722370907,
+      "cvar5": -746.6106233296604,
+      "worst": -1347.6304952999255,
+      "mean_max_dd": 553.0029487593993,
+      "p95_max_dd": 989.7662353479681,
+      "mean_costs": 36.40400525638258,
+      "mean_fees": 68.11489189076138,
+      "mean_slippage": -31.70830017006142,
+      "mean_open_window_cost": 1.417316863760727,
+      "mean_traded_usd": 338411.4452235289,
+      "thin_fills_per_book": 0.07836990595611286
+    },
+    "freeze_deadband_5000": {
+      "n": 2552,
+      "mean_pnl": -23.713753767657206,
+      "std_pnl": 335.27502982882874,
+      "cvar5": -727.3001879026489,
+      "worst": -1481.6140872874007,
+      "mean_max_dd": 546.9181242416536,
+      "p95_max_dd": 974.0466808690328,
+      "mean_costs": 23.735171142419464,
+      "mean_fees": 42.14260118704919,
+      "mean_slippage": -18.408766999006716,
+      "mean_open_window_cost": 0.9301758256799849,
+      "mean_traded_usd": 204733.79171579125,
+      "thin_fills_per_book": 0.16065830721003135
+    }
+  },
+  "after_weekend_or_holiday": {
+    "unhedged": {
+      "n": 560,
+      "mean_pnl": 0.0,
+      "std_pnl": 509.0878572786542,
+      "cvar5": -613.0357142857143,
+      "worst": -750.0,
+      "mean_max_dd": 573.8116071428572,
+      "p95_max_dd": 880.0,
+      "mean_costs": 0.0,
+      "mean_fees": 0.0,
+      "mean_slippage": 0.0,
+      "mean_open_window_cost": 0.0,
+      "mean_traded_usd": 0.0,
+      "thin_fills_per_book": 0.0
+    },
+    "continuous": {
+      "n": 560,
+      "mean_pnl": -138.2885704902042,
+      "std_pnl": 365.05027988935774,
+      "cvar5": -945.5678969992777,
+      "worst": -1388.2553472319564,
+      "mean_max_dd": 691.6254300327344,
+      "p95_max_dd": 1153.0010576330114,
+      "mean_costs": 138.984363129429,
+      "mean_fees": 238.4662416002807,
+      "mean_slippage": -99.47624673969804,
+      "mean_open_window_cost": 2.3140899022558563,
+      "mean_traded_usd": 1192245.7140455106,
+      "thin_fills_per_book": 0.007142857142857143
+    },
+    "freeze": {
+      "n": 560,
+      "mean_pnl": -137.72432268772326,
+      "std_pnl": 370.2175247697549,
+      "cvar5": -934.5610087500423,
+      "worst": -1393.554805865653,
+      "mean_max_dd": 693.2458348432867,
+      "p95_max_dd": 1139.6911501619195,
+      "mean_costs": 138.4318116862403,
+      "mean_fees": 233.61517190523108,
+      "mean_slippage": -95.17772849477146,
+      "mean_open_window_cost": 1.761511661835092,
+      "mean_traded_usd": 1167990.365570262,
+      "thin_fills_per_book": 0.007142857142857143
+    },
+    "continuous_session_sigma": {
+      "n": 560,
+      "mean_pnl": -30.30538164227789,
+      "std_pnl": 222.2155260631116,
+      "cvar5": -568.3586673847803,
+      "worst": -910.8445906711263,
+      "mean_max_dd": 449.71340272855343,
+      "p95_max_dd": 715.7999262883571,
+      "mean_costs": 30.279682620488114,
+      "mean_fees": 59.01225900381305,
+      "mean_slippage": -28.730811201232132,
+      "mean_open_window_cost": 0.7968700773272656,
+      "mean_traded_usd": 294979.96264281526,
+      "thin_fills_per_book": 0.008928571428571428
+    },
+    "freeze_session_sigma": {
+      "n": 560,
+      "mean_pnl": -30.12892671464324,
+      "std_pnl": 225.72235753864769,
+      "cvar5": -570.2533587877351,
+      "worst": -919.1359206293105,
+      "mean_max_dd": 449.7606282181967,
+      "p95_max_dd": 714.5912054716988,
+      "mean_costs": 30.096945502600366,
+      "mean_fees": 58.00369180393786,
+      "mean_slippage": -27.904981119244685,
+      "mean_open_window_cost": 0.6140753382094793,
+      "mean_traded_usd": 289937.12664343935,
+      "thin_fills_per_book": 0.008928571428571428
+    }
+  },
+  "placebo": {
+    "n": {
+      "mean": 2552.0,
+      "min": 2552,
+      "max": 2552
+    },
+    "mean_pnl": {
+      "mean": -211.33494064649216,
+      "min": -213.03352000166353,
+      "max": -208.78542531740396
+    },
+    "std_pnl": {
+      "mean": 410.5877510507813,
+      "min": 405.1963788215276,
+      "max": 416.0912098924755
+    },
+    "cvar5": {
+      "mean": -1054.0072180863244,
+      "min": -1072.0319954310826,
+      "max": -1039.4121816022787
+    },
+    "worst": {
+      "mean": -1720.128469896279,
+      "min": -1956.849367173071,
+      "max": -1557.596534940163
+    },
+    "mean_max_dd": {
+      "mean": 585.306550011384,
+      "min": 583.3762743368344,
+      "max": 586.8685420490182
+    },
+    "p95_max_dd": {
+      "mean": 1036.6323288194453,
+      "min": 1020.813604945118,
+      "max": 1048.474967215387
+    },
+    "mean_costs": {
+      "mean": 214.22496799006026,
+      "min": 211.78535583274643,
+      "max": 215.86410427129607
+    },
+    "mean_fees": {
+      "mean": 206.71053372224287,
+      "min": 204.4566651442916,
+      "max": 208.7755508686505
+    },
+    "mean_slippage": {
+      "mean": 7.515417649502091,
+      "min": 6.696190027074215,
+      "max": 8.512726375382085
+    },
+    "mean_open_window_cost": {
+      "mean": 8.036561570086514,
+      "min": 7.626722870949328,
+      "max": 8.592745587382069
+    },
+    "mean_traded_usd": {
+      "mean": 689060.6565946566,
+      "min": 683402.3415530415,
+      "max": 694207.0368782531
+    },
+    "thin_fills_per_book": {
+      "mean": 104.12903605015674,
+      "min": 102.29976489028213,
+      "max": 106.94514106583073
+    }
+  },
+  "placebo_at_least_as_good_as_gated": {
+    "cvar5": 0.0,
+    "std_pnl": 1.0
+  },
+  "gated_level_share": {
+    "TSLAUSDT": {
+      "NORMAL": 0.5931302507111199,
+      "PRE_HEDGING_ALERT": 0.31756300853343916,
+      "EMERGENCY_HEDGE_EXECUTION": 0.0893067407554409
+    },
+    "NVDAUSDT": {
+      "NORMAL": 0.6153099705665931,
+      "PRE_HEDGING_ALERT": 0.29834437086092713,
+      "EMERGENCY_HEDGE_EXECUTION": 0.08634565857247976
+    },
+    "AAPLUSDT": {
+      "NORMAL": 0.5830479452054794,
+      "PRE_HEDGING_ALERT": 0.312095700152207,
+      "EMERGENCY_HEDGE_EXECUTION": 0.10485635464231355
+    },
+    "SPYUSDT": {
+      "NORMAL": 0.6333088810641627,
+      "PRE_HEDGING_ALERT": 0.27147887323943665,
+      "EMERGENCY_HEDGE_EXECUTION": 0.09521224569640063
+    },
+    "AMZNUSDT": {
+      "NORMAL": 0.582980823463057,
+      "PRE_HEDGING_ALERT": 0.3194796954314721,
+      "EMERGENCY_HEDGE_EXECUTION": 0.09753948110547095
+    },
+    "METAUSDT": {
+      "NORMAL": 0.5886347131445171,
+      "PRE_HEDGING_ALERT": 0.3093137254901961,
+      "EMERGENCY_HEDGE_EXECUTION": 0.10205156136528686
+    },
+    "GOOGLUSDT": {
+      "NORMAL": 0.607711038961039,
+      "PRE_HEDGING_ALERT": 0.3059659090909091,
+      "EMERGENCY_HEDGE_EXECUTION": 0.08632305194805195
+    },
+    "MSFTUSDT": {
+      "NORMAL": 0.5581975772765246,
+      "PRE_HEDGING_ALERT": 0.33998015873015874,
+      "EMERGENCY_HEDGE_EXECUTION": 0.10182226399331662
+    },
+    "COINUSDT": {
+      "NORMAL": 0.5653689674523008,
+      "PRE_HEDGING_ALERT": 0.3362303591470258,
+      "EMERGENCY_HEDGE_EXECUTION": 0.0984006734006734
+    },
+    "PLTRUSDT": {
+      "NORMAL": 0.5852227862380147,
+      "PRE_HEDGING_ALERT": 0.31774534686971234,
+      "EMERGENCY_HEDGE_EXECUTION": 0.09703186689227299
+    },
+    "HOODUSDT": {
+      "NORMAL": 0.5895267279536942,
+      "PRE_HEDGING_ALERT": 0.32851889683350355,
+      "EMERGENCY_HEDGE_EXECUTION": 0.08195437521280217
+    }
+  }
+}
