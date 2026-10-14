@@ -252,6 +252,8 @@ TMR_TRADFI_ROOT=/path/to/tick-microstructure-research/data/tradfi python researc
 
 Results go to `research/results_confluence.json` and `research/assets/confluence_*.png`.
 
+The fair-value quoter made +$6.2k from January to September 2026, almost all of it before mid-June. Re-run unchanged on 29 Sep – 13 Oct 2026 (120 market-nights) it lost $2,956, and 18 of 20 placebo seeds did at least as well. Treat it as a research harness, not a strategy.
+
 ---
 
 ## Plans
